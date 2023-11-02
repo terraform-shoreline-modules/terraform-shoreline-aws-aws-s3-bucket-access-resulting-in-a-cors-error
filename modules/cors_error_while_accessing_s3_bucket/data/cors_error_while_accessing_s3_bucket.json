@@ -1,0 +1,106 @@
+{
+  "name": "cors_error_while_accessing_s3_bucket",
+  "description": "This incident type relates to encountering a Cross-Origin Resource Sharing (CORS) error while trying to access an S3 object from a bucket. In order to troubleshoot this issue, it is necessary to ensure that the CORS configuration is properly set on the bucket and that the request headers match the allowed origin, method, and headers specified in the configuration. The recommended steps include verifying the presence of the Origin header, capturing the complete request and response, and checking that the method and headers in the request align with the allowed values in the CORS rule.",
+  "params": [
+    {
+      "name": "S3_OBJECT_URL",
+      "value": ""
+    },
+    {
+      "name": "ALLOWED_HEADER",
+      "value": ""
+    },
+    {
+      "name": "ALLOWED_ORIGIN",
+      "value": ""
+    },
+    {
+      "name": "BUCKET_NAME",
+      "value": ""
+    },
+    {
+      "name": "ALLOWED_METHOD",
+      "value": ""
+    },
+    {
+      "name": "HOST_NAME",
+      "value": ""
+    },
+    {
+      "name": "K8S_CLUSTER_NAME",
+      "value": ""
+    },
+    {
+      "name": "NAMESPACE",
+      "value": ""
+    }
+  ],
+  "cells": [
+    {
+      "name": "cell_1",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## CORS error while accessing S3 bucket.\nThis incident type relates to encountering a Cross-Origin Resource Sharing (CORS) error while trying to access an S3 object from a bucket. In order to troubleshoot this issue, it is necessary to ensure that the CORS configuration is properly set on the bucket and that the request headers match the allowed origin, method, and headers specified in the configuration. The recommended steps include verifying the presence of the Origin header, capturing the complete request and response, and checking that the method and headers in the request align with the allowed values in the CORS rule."
+    },
+    {
+      "name": "cell_2",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Verify the CORS configuration of a bucket"
+    },
+    {
+      "name": "cell_3",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `aws s3api get-bucket-cors --bucket ${BUCKET_NAME}`"
+    },
+    {
+      "name": "cell_4",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if the Origin header in the request matches the allowed origin in the CORS configuration"
+    },
+    {
+      "name": "cell_5",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `curl -I -H \"Origin: ${ALLOWED_ORIGIN}\" ${S3_OBJECT_URL}`"
+    },
+    {
+      "name": "cell_6",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if the method in the request matches the allowed method in the CORS configuration"
+    },
+    {
+      "name": "cell_7",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `curl -I -X ${ALLOWED_METHOD} ${S3_OBJECT_URL}`"
+    },
+    {
+      "name": "cell_8",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check if the headers in the request match the allowed headers in the CORS configuration"
+    },
+    {
+      "name": "cell_9",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `curl -I -H \"Origin: ${ALLOWED_ORIGIN}\" -H \"Access-Control-Request-Method: ${ALLOWED_METHOD}\" -H \"Access-Control-Request-Headers: ${ALLOWED_HEADER}\" -X OPTIONS ${S3_OBJECT_URL}`"
+    },
+    {
+      "name": "cell_10",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Update the CORS configuration to match the expected values.Verify that the CORS configuration is properly set on the bucket."
+    },
+    {
+      "name": "cell_11",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "host | host_name=$HOST_NAME | invoke_s3_update_cors_config($BUCKET_NAME)"
+    }
+  ]
+}
